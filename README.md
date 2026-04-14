@@ -98,6 +98,10 @@ Near-term milestones:
 4. Add first round of weight and packaging trade study artifacts with explicit margin assumptions.
 5. Define change-control workflow for configuration updates that affect subsystem repos.
 
+## Knowledge Migration
+
+- Article-derived subsystem migration notes: `docs/ARTICLE_KNOWLEDGE_MIGRATION_2026Q2.md`
+
 ## Licensing
 
 This repository uses a dual-license model:
