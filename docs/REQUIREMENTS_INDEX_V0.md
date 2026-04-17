@@ -1,0 +1,122 @@
+﻿# MAOS Cross-Repo Requirements Index v0
+
+Status: Draft aggregation for GitHub project planning.
+Source: INITIAL_REQUIREMENTS_V0.md files from active MAOS subsystem repos.
+
+## Columns
+- Requirement ID
+- Repo
+- Subsystem
+- Type
+- Priority
+- Status
+- Summary
+
+## Requirement Table
+
+| Requirement ID | Repo | Subsystem | Type | Priority | Status | Summary |
+|---|---|---|---|---|---|---|
+| DES-IF-001 | MAOS-DESIGN | DESIGN | Interface | High | Draft | Aircraft-level interface contracts shall be versioned and published for propulsion, flight controls, ECS, landing gear, and vision. |
+| DES-IF-002 | MAOS-DESIGN | DESIGN | Interface | High | Draft | Interface contracts shall define units, sign conventions, rates, tolerances, and timeout semantics. |
+| DES-IF-003 | MAOS-DESIGN | DESIGN | Interface | High | Draft | Mechanical interface contracts shall define mounting datums and load directions. |
+| DES-IF-004 | MAOS-DESIGN | DESIGN | Interface | High | Draft | Electrical interface contracts shall define nominal voltage ranges and fault annunciation channels. |
+| DES-INT-001 | MAOS-DESIGN | DESIGN | Other | Medium | Draft | The design process shall allow at least two viable propulsion architectures until evidence eliminates one. |
+| DES-INT-002 | MAOS-DESIGN | DESIGN | Other | Medium | Draft | Major architecture decisions shall document rationale, assumptions, and confidence level. |
+| DES-INT-003 | MAOS-DESIGN | DESIGN | Other | Medium | Draft | A subsystem may not be declared integrated unless all required interface fields are mapped and verified. |
+| DES-INT-004 | MAOS-DESIGN | DESIGN | Other | Medium | Draft | Integration assumptions shall be traceable to a requirement or explicit open issue. |
+| DES-SYS-001 | MAOS-DESIGN | DESIGN | Functional | Medium | Draft | The repository shall define and maintain one controlled baseline aircraft configuration at all times. |
+| DES-SYS-002 | MAOS-DESIGN | DESIGN | Functional | Medium | Draft | The baseline configuration shall include target MTOW, empty weight estimate, CG envelope, and margin assumptions. |
+| DES-SYS-003 | MAOS-DESIGN | DESIGN | Functional | Medium | Draft | All subsystem packaging volumes (FCS, ICE, MOTOR, ECS, GEAR, VISION) shall be represented in the baseline geometry. |
+| DES-SYS-004 | MAOS-DESIGN | DESIGN | Functional | Medium | Draft | Baseline geometry changes that affect subsystem interfaces shall include an impact note. |
+| DES-VER-001 | MAOS-DESIGN | DESIGN | Verification | Medium | Draft | Each baseline release shall include updated mass and CG calculations. |
+| DES-VER-002 | MAOS-DESIGN | DESIGN | Verification | Medium | Draft | Each baseline release shall include an interface consistency check across subsystem repos. |
+| DES-VER-003 | MAOS-DESIGN | DESIGN | Verification | Medium | Draft | Requirement-to-evidence traceability shall be maintained for all aircraft-level requirements. |
+| DES-VER-004 | MAOS-DESIGN | DESIGN | Verification | Medium | Draft | Unverified assumptions shall be listed in an open assumptions register. |
+| ECS-FLT-001 | MAOS-ECS | ECS | Fault/Safety | High | Draft | The controller shall detect out-of-range pressure, out-of-range temperature, and sensor plausibility faults. |
+| ECS-FLT-002 | MAOS-ECS | ECS | Fault/Safety | High | Draft | Fault handling shall define degraded thermal operation and safe shutdown triggers. |
+| ECS-FLT-003 | MAOS-ECS | ECS | Fault/Safety | High | Draft | Pressurization-related faults shall generate explicit high-priority alerts. |
+| ECS-FLT-004 | MAOS-ECS | ECS | Fault/Safety | High | Draft | Fault transitions shall be logged with timestamp and reason code. |
+| ECS-IF-001 | MAOS-ECS | ECS | Interface | High | Draft | Electrical interface shall define steady-state power budget, startup behavior, and fault boundaries. |
+| ECS-IF-002 | MAOS-ECS | ECS | Interface | High | Draft | Air/duct interface shall define flow assumptions, pressure-drop assumptions, and mechanical connection constraints. |
+| ECS-IF-003 | MAOS-ECS | ECS | Interface | High | Draft | Thermal interface shall define temperature sensing points and allowable control bands. |
+| ECS-IF-004 | MAOS-ECS | ECS | Interface | High | Draft | Control interface shall define command rates, telemetry rates, and timeout/fallback behavior. |
+| ECS-SYS-001 | MAOS-ECS | ECS | Functional | Medium | Draft | The ECS subsystem shall provide controllable cabin thermal conditioning for baseline flight operations. |
+| ECS-SYS-002 | MAOS-ECS | ECS | Functional | Medium | Draft | The architecture shall preserve a defined upgrade path to controlled pressurization. |
+| ECS-SYS-003 | MAOS-ECS | ECS | Functional | Medium | Draft | The controller shall support mode states for off, thermal-control, and pressurization-development modes. |
+| ECS-SYS-004 | MAOS-ECS | ECS | Functional | Medium | Draft | The subsystem shall expose commanded mode and measured mode state. |
+| ECS-VER-001 | MAOS-ECS | ECS | Verification | Medium | Draft | Simulation shall cover representative thermal load cases for climb, cruise, and descent. |
+| ECS-VER-002 | MAOS-ECS | ECS | Verification | Medium | Draft | Bench testing shall verify control-loop behavior and sensor fault handling. |
+| ECS-VER-003 | MAOS-ECS | ECS | Verification | Medium | Draft | Pressurization development logic shall be validated in a controlled non-flight test setup before integration. |
+| ECS-VER-004 | MAOS-ECS | ECS | Verification | Medium | Draft | Requirement traceability to test evidence shall be maintained. |
+| FCS-SEED-001 | MAOS-FCS | FCS | Seed | Medium | Draft | The system shall support triplex FCC operation with deterministic lane health publication. |
+| FCS-SEED-002 | MAOS-FCS | FCS | Seed | Medium | Draft | The voter shall support triplex and degraded duplex operation modes. |
+| FCS-SEED-003 | MAOS-FCS | FCS | Seed | Medium | Draft | The control stack shall support normal, degraded, and fail-safe mode declarations. |
+| FCS-SEED-004 | MAOS-FCS | FCS | Seed | Medium | Draft | Control outputs shall be deterministic for a given input/state set. |
+| GER-FLT-001 | MAOS-GEAR | GEAR | Fault/Safety | High | Draft | The subsystem shall detect steering command loss, brake command loss, and position-sensing faults. |
+| GER-FLT-002 | MAOS-GEAR | GEAR | Fault/Safety | High | Draft | Fault responses shall define safe degraded ground-handling behavior. |
+| GER-FLT-003 | MAOS-GEAR | GEAR | Fault/Safety | High | Draft | Critical gear faults shall generate explicit alerts and event logs. |
+| GER-FLT-004 | MAOS-GEAR | GEAR | Fault/Safety | High | Draft | Fault transitions shall be deterministic and traceable. |
+| GER-IF-001 | MAOS-GEAR | GEAR | Interface | High | Draft | Mechanical interfaces shall define mount locations, load paths, and tolerance assumptions. |
+| GER-IF-002 | MAOS-GEAR | GEAR | Interface | High | Draft | Steering/braking command interfaces shall define units, rates, and timeout behavior. |
+| GER-IF-003 | MAOS-GEAR | GEAR | Interface | High | Draft | If powered actuation is used, electrical/hydraulic interfaces shall define nominal ranges and fault flags. |
+| GER-IF-004 | MAOS-GEAR | GEAR | Interface | High | Draft | Gear status telemetry shall include position state, brake state, and detected fault state. |
+| GER-SYS-001 | MAOS-GEAR | GEAR | Functional | Medium | Draft | Landing gear architecture shall support taxi, takeoff, landing, and rollout loads defined by the baseline aircraft assumptions. |
+| GER-SYS-002 | MAOS-GEAR | GEAR | Functional | Medium | Draft | The subsystem shall define operating limits for speed, sink rate, and side-load assumptions. |
+| GER-SYS-003 | MAOS-GEAR | GEAR | Functional | Medium | Draft | Steering and braking interfaces shall be defined for baseline operations and degraded operation. |
+| GER-SYS-004 | MAOS-GEAR | GEAR | Functional | Medium | Draft | Gear subsystem status shall be available to other subsystems via normalized telemetry. |
+| GER-VER-001 | MAOS-GEAR | GEAR | Verification | Medium | Draft | Static load cases shall be analyzed and documented against baseline assumptions. |
+| GER-VER-002 | MAOS-GEAR | GEAR | Verification | Medium | Draft | Kinematic travel and interference checks shall be performed for nominal operation. |
+| GER-VER-003 | MAOS-GEAR | GEAR | Verification | Medium | Draft | Steering and braking interface behaviors shall be bench-tested where applicable. |
+| GER-VER-004 | MAOS-GEAR | GEAR | Verification | Medium | Draft | Requirement-to-evidence traceability shall be maintained. |
+| ICE-FLT-001 | MAOS-ICE | ICE | Fault/Safety | High | Draft | The controller shall detect overtemp, overspeed, low oil pressure, and sensor plausibility faults. |
+| ICE-FLT-002 | MAOS-ICE | ICE | Fault/Safety | High | Draft | Fault handling shall define degraded operation and commanded shutdown conditions. |
+| ICE-FLT-003 | MAOS-ICE | ICE | Fault/Safety | High | Draft | Fault transitions shall be logged with timestamp and reason code. |
+| ICE-FLT-004 | MAOS-ICE | ICE | Fault/Safety | High | Draft | Sensor loss shall not cause undefined controller outputs. |
+| ICE-IF-001 | MAOS-ICE | ICE | Interface | High | Draft | Mechanical coupling interface shall define shaft speed range, torque limits, and alignment tolerances. |
+| ICE-IF-002 | MAOS-ICE | ICE | Interface | High | Draft | Electrical interface shall define starter/generator power budgets and grounding constraints. |
+| ICE-IF-003 | MAOS-ICE | ICE | Interface | High | Draft | Thermal interface shall define coolant flow, temperature limits, and alarm thresholds. |
+| ICE-IF-004 | MAOS-ICE | ICE | Interface | High | Draft | Fuel interface shall define pressure, flow, and contamination assumptions. |
+| ICE-IF-005 | MAOS-ICE | ICE | Interface | High | Draft | Telemetry interface shall define units, update rates, and fault flags for FCS and logging tools. |
+| ICE-SYS-001 | MAOS-ICE | ICE | Functional | Medium | Draft | The ICE subsystem shall support continuous generator-duty operation in the 100-230 kW target class. |
+| ICE-SYS-002 | MAOS-ICE | ICE | Functional | Medium | Draft | The ICE subsystem shall publish commanded operating state and measured operating state each control cycle. |
+| ICE-SYS-003 | MAOS-ICE | ICE | Functional | Medium | Draft | The ICE controller shall support startup, run, derate, and shutdown states with deterministic transitions. |
+| ICE-SYS-004 | MAOS-ICE | ICE | Functional | Medium | Draft | The subsystem shall provide a configurable operating-point scheduler for efficiency-focused generator operation. |
+| ICE-VER-001 | MAOS-ICE | ICE | Verification | Medium | Draft | Bench tests shall cover startup, steady-state load steps, and commanded shutdown. |
+| ICE-VER-002 | MAOS-ICE | ICE | Verification | Medium | Draft | Bench tests shall include injected sensor fault scenarios and expected responses. |
+| ICE-VER-003 | MAOS-ICE | ICE | Verification | Medium | Draft | At least one requirement-mapped simulation campaign shall validate operating-point logic. |
+| ICE-VER-004 | MAOS-ICE | ICE | Verification | Medium | Draft | Requirements shall be traceable to test artifacts or open gaps. |
+| MOT-FLT-001 | MAOS-MOTOR | MOTOR | Fault/Safety | High | Draft | The subsystem shall detect overcurrent, overvoltage, undervoltage, overtemperature, and comms timeout faults. |
+| MOT-FLT-002 | MAOS-MOTOR | MOTOR | Fault/Safety | High | Draft | Fault responses shall be deterministic and include bounded torque reduction or controlled disable. |
+| MOT-FLT-003 | MAOS-MOTOR | MOTOR | Fault/Safety | High | Draft | Fault behavior shall be role-aware (generator vs propulsor). |
+| MOT-FLT-004 | MAOS-MOTOR | MOTOR | Fault/Safety | High | Draft | Fault and derating events shall be logged with reason codes. |
+| MOT-IF-001 | MAOS-MOTOR | MOTOR | Interface | High | Draft | HV bus interface shall define nominal voltage range, current limits, and inrush behavior. |
+| MOT-IF-002 | MAOS-MOTOR | MOTOR | Interface | High | Draft | Mechanical interface shall define shaft speed envelope, torque limits, and coupling assumptions. |
+| MOT-IF-003 | MAOS-MOTOR | MOTOR | Interface | High | Draft | Thermal interface shall define coolant requirements and derating thresholds. |
+| MOT-IF-004 | MAOS-MOTOR | MOTOR | Interface | High | Draft | Telemetry interface shall publish current, voltage, temperature, speed, torque estimate, and fault flags. |
+| MOT-IF-005 | MAOS-MOTOR | MOTOR | Interface | High | Draft | Control interface shall define command/update rates, timeout behavior, and fallback response. |
+| MOT-SYS-001 | MAOS-MOTOR | MOTOR | Functional | Medium | Draft | The motor subsystem shall support propulsion operation in the 120-350 kW class through configurable hardware profiles. |
+| MOT-SYS-002 | MAOS-MOTOR | MOTOR | Functional | Medium | Draft | The subsystem shall support both generator-role and propulsor-role configuration modes. |
+| MOT-SYS-003 | MAOS-MOTOR | MOTOR | Functional | Medium | Draft | The motor controller shall implement deterministic state transitions for init, ready, run, derate, and fault. |
+| MOT-SYS-004 | MAOS-MOTOR | MOTOR | Functional | Medium | Draft | Torque/speed command semantics shall be normalized independent of vendor-specific APIs. |
+| MOT-VER-001 | MAOS-MOTOR | MOTOR | Verification | Medium | Draft | Bench tests shall verify command-response behavior across the defined operating envelope. |
+| MOT-VER-002 | MAOS-MOTOR | MOTOR | Verification | Medium | Draft | Bench tests shall verify thermal derating behavior against configured thresholds. |
+| MOT-VER-003 | MAOS-MOTOR | MOTOR | Verification | Medium | Draft | Fault-injection tests shall verify each required protection path. |
+| MOT-VER-004 | MAOS-MOTOR | MOTOR | Verification | Medium | Draft | Requirement-to-test traceability shall be maintained. |
+| VIS-FLT-001 | MAOS-VISION | VISION | Fault/Safety | High | Draft | The subsystem shall detect stale frames, stream dropout, and synchronization faults. |
+| VIS-FLT-002 | MAOS-VISION | VISION | Fault/Safety | High | Draft | Degraded mode shall preserve usable pilot cues when possible. |
+| VIS-FLT-003 | MAOS-VISION | VISION | Fault/Safety | High | Draft | Fault annunciation shall include clear state indication to the pilot/operator. |
+| VIS-FLT-004 | MAOS-VISION | VISION | Fault/Safety | High | Draft | Fault events and mode transitions shall be logged with reason codes. |
+| VIS-IF-001 | MAOS-VISION | VISION | Interface | High | Draft | Sensor interface contracts shall define frame rate, resolution, timestamping, and synchronization assumptions. |
+| VIS-IF-002 | MAOS-VISION | VISION | Interface | High | Draft | Transport interface contracts shall define packet-loss behavior and latency/jitter budgets. |
+| VIS-IF-003 | MAOS-VISION | VISION | Interface | High | Draft | Display interface contracts shall define update rate, stale-frame indication, and degradation cues. |
+| VIS-IF-004 | MAOS-VISION | VISION | Interface | High | Draft | Control interface shall define command semantics for view selection and display mode changes. |
+| VIS-SYS-001 | MAOS-VISION | VISION | Functional | Medium | Draft | The vision subsystem shall provide outside-scene presentation for pilot awareness using external camera feeds. |
+| VIS-SYS-002 | MAOS-VISION | VISION | Functional | Medium | Draft | The subsystem shall support configurable camera profiles for different aircraft configurations. |
+| VIS-SYS-003 | MAOS-VISION | VISION | Functional | Medium | Draft | The vision pipeline shall expose deterministic mode states (init, run, degraded, fault). |
+| VIS-SYS-004 | MAOS-VISION | VISION | Functional | Medium | Draft | The system shall support fallback behavior when one or more camera streams are unavailable. |
+| VIS-VER-001 | MAOS-VISION | VISION | Verification | Medium | Draft | Latency and jitter measurements shall be validated against configured budgets. |
+| VIS-VER-002 | MAOS-VISION | VISION | Verification | Medium | Draft | Fault-injection scenarios shall include camera dropout, frozen frame, and transport loss. |
+| VIS-VER-003 | MAOS-VISION | VISION | Verification | Medium | Draft | Scenario-based tests shall evaluate degraded visibility handling. |
+| VIS-VER-004 | MAOS-VISION | VISION | Verification | Medium | Draft | Requirement-to-test traceability shall be maintained. |
+
+Total requirements indexed: 102
