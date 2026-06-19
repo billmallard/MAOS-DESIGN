@@ -32,7 +32,7 @@ The stack is **source-pluggable around a single normalized data bus**. `fix-gate
 
 **Consequences that drive the roadmap:**
 - **Redundancy & selection are first-class.** Attitude can come from Stratux *and* OnSpeed; position from Stratux GPS *and* the GNX. The gateway is where sources are selected/fused — design for it.
-- **The bus is great for scalars, weak for dynamic lists.** Traffic targets and route legs are variable-length; their FIX representation is an explicit open interface decision (see §6, §7).
+- **The bus is great for scalars, weak for dynamic lists.** Traffic targets and route legs are variable-length; their FIX representation is an explicit open interface decision (see §7, §8).
 - **Experimental display, certified nav.** pyEfis owns presentation + experimental cues (SVS, AOA, OnSpeed tones); certified nav/position/transponder stays in the GNX. The boundary is deliberate.
 
 ## 3. Component inventory
@@ -92,20 +92,48 @@ Sequencing favors completing primary sensing before situational-awareness featur
 
 **Phase 4 — Certified GPS-navigator integration ("the official navigator problem")**
 - Treat the **GNX-375 as the authoritative IFR nav/position source**; pyEfis is the display + experimental layer. Do **not** build a DIY IFR navigator (legality + RNAV/approach engine scope).
-- Complete the GNX bridge: wired **NMEA "Aviation Output"** (position/track/GS/CDI/course) ✓; **ARINC-429 GPSS** for autopilot steering; **Connext/Bluetooth** for attitude/traffic *if* it can be unblocked (currently heartbeat-only — see §7). Mitigation if Connext stays closed: attitude from Stratux/OnSpeed, traffic from Stratux.
+- Complete the GNX bridge: wired **NMEA "Aviation Output"** (position/track/GS/CDI/course) ✓; **ARINC-429 GPSS** for autopilot steering; **Connext/Bluetooth** for attitude/traffic *if* it can be unblocked (currently heartbeat-only — see §8). Mitigation if Connext stays closed: attitude from Stratux/OnSpeed, traffic from Stratux.
+
+**Phase 5 — Vehicle systems integration** *(as those subsystems mature)*
+- Environmental control (cabin thermal + pressurization), electric propulsion, ICE/generator, and HV battery management onto the same bus — full treatment in §6.
 
 **Longer horizon**
 - GI-275-style autopilot commander (heading bug / alt preselect / GPSS) on experimental-category aircraft only.
 - Vector MFD on SVS data (alternative to raster); data-manager maturation.
 
-## 6. Key interface decisions (freeze before deep implementation)
+## 6. Vehicle systems integration (ECS, propulsion, battery)
+
+The same source-pluggable model extends to the aircraft's non-flight systems — environmental control (cabin thermal + pressurization), electric propulsion (motor/inverter), the ICE/turbine generator, and high-voltage battery management (BMS). These are later phases (gated by subsystem maturity), but they require **no new avionics architecture**: each is another CAN-FIX source publishing normalized FIX keys, displayed by the existing widget set.
+
+**Integration path — identical to engine EMS today:**
+
+```
+ECS / Motor+Inverter / BMS / ICE controllers ─CAN-FIX─▶ fix-gateway plugin ─▶ FIX keys ─▶ pyEfis (gauges/screens + mode commands)
+```
+
+The MAOS-ECS, MAOS-MOTOR, and MAOS-ICE requirements already specify **normalized telemetry interfaces** (units, update rates, fault flags, commanded-vs-measured mode state — e.g. ECS-IF-004, MOT-IF-004, ICE-IF-005). Those map directly onto FIX keys, so the interface contract is partly pre-specified.
+
+**Reuses (no new framework):**
+- Arc / bar / numeric / ganged gauges with green/yellow/red bands + annunciation, pointed at new keys: cabin ΔP and temps, HV bus voltage/current, battery SOC/temp/cell health, motor & inverter temperatures, generator output. pyEfis already displays `VOLT`/`CURRNT`.
+- New **screen layouts** via the screenbuilder — an **ECS page** and a **power/energy page** for the series hybrid.
+- **Mode commanding** via the existing button/condition/action model + FIX command keys (ECS off/thermal/pressurization; motor generator-vs-propulsor; etc.), the same way the autopilot buttons command modes.
+
+**New display work this actually drives:**
+- A **power/energy synoptic** (ICE→generator→battery→motor power-flow, SOC, derate state) — richer than a traditional EMS strip.
+- A formal **Crew Alerting System (CAS)** — a prioritized warning/caution/advisory area. A pressurized HV-hybrid has far more abnormal conditions (HV/bus faults, battery thermal limits, pressurization loss) than per-gauge coloring serves well. This is the principal new display feature these systems push pyEfis toward.
+
+**Hard boundary (safety):** pyEfis is **advisory display + HMI, not a controller.** Control loops, state machines, and *protection* remain in the subsystem controllers — consistent with the MAOS-DESIGN governance that subsystem repos own firmware, deterministic transitions, and fault handling. For the two life-/energy-safety items — **cabin pressurization** and the **HV battery** — primary protection must never depend on the advisory display; pyEfis annunciates and commands modes only.
+
+**Practical flags:** motor + multi-cell battery telemetry is higher channel-count and rate than piston EMS — budget the CAN-FIX/FIX bus load; and these extend the same FIX key contract (§7) that should be frozen first.
+
+## 7. Key interface decisions (freeze before deep implementation)
 
 1. **FIX key contract** for new data: `AOA`/`%lift`, `HEAD` (true vs magnetic + magvar handling), traffic, route — define units, sign conventions, rates, timeout semantics, quality flags.
 2. **Dynamic-list representation over FIX** (traffic targets, route legs): indexed key blocks vs. side channel vs. structured value. The single most important open interface item (pyEfis #52).
 3. **Source-selection / fusion** for redundant inputs (two AHRS, two position sources): priority, blending, and degraded-mode behavior, owned by the gateway.
 4. **Experimental/certified boundary:** which functions must originate in certified equipment (IFR nav, ADS-B Out, transponder) vs. may be advisory/open-source.
 
-## 7. Open problems & risk register
+## 8. Open problems & risk register
 
 | Item | Risk | Mitigation / note |
 |------|------|-------------------|
@@ -116,11 +144,11 @@ Sequencing favors completing primary sensing before situational-awareness featur
 | Chart / nav-data currency | FAA 56-day cycle | makerplane-data signed packs + on-device updater |
 | pyAvMap Qt mismatch | PyQt5 vs pyEfis PyQt6 | Port engine into the PyQt6 `map` instrument (#50), don't run standalone |
 
-## 8. Next step for this document
+## 9. Next step for this document
 
-Formalize the AVIONICS (AVI) subsystem into the requirements process: add `AVI-*` requirements (functional/interface/fault/verification) to an `INITIAL_REQUIREMENTS` file and the cross-repo `REQUIREMENTS_INDEX`, with the FIX key contract (§6) as the interface backbone. This roadmap is the input to that exercise, not a substitute for it.
+Formalize the AVIONICS (AVI) subsystem into the requirements process: add `AVI-*` requirements (functional/interface/fault/verification) to an `INITIAL_REQUIREMENTS` file and the cross-repo `REQUIREMENTS_INDEX`, with the FIX key contract (§7) as the interface backbone. This roadmap is the input to that exercise, not a substitute for it.
 
-## 9. References
+## 10. References
 
 - pyEfis MFD milestone & issues: `billmallard/pyEfis` milestone "Multi Function Display" (#48–#56).
 - pyAvMap MFD candidacy: `pyAvMap/docs/MFD-Assessment.md`, `pyAvMap/docs/ARCHITECTURE.md`.
