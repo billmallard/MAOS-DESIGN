@@ -1,0 +1,15 @@
+# Secrets / credentials — never commit
+OnshapeAPI.txt
+.env
+*.env
+*Sudo.txt
+*.key
+*.pem
+*_token
+*secret*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*~
+*.swp
