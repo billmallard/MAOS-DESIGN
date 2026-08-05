@@ -187,6 +187,38 @@ Because every source normalizes into the FIX key DB, the gateway can **source-se
 4. **Experimental/certified boundary:** which functions must originate in certified equipment (IFR nav, ADS-B Out, transponder) vs. may be advisory/open-source.
 5. **Connectivity boundary:** what the ground link / maintenance port may read vs. write, and the authentication/interlock model for all write paths (§7).
 
+### 9.1 Ratified keys
+
+`fix-gateway`'s `database/*.yaml` remains the **runtime source of truth** for a
+key's exact values (type, min/max, initial, timeout). This subsection is the
+**design record**: the sign conventions, source-selection semantics, and
+experimental/certified rationale behind each ratified block — the "why" §9
+freezes, not a mirror of the DB. Add a block here when new keys are minted.
+
+**Bearing pointers (HSI RMI)** — ratified 2026-08-04 (P5b.1/.2; fix-gateway
+PR #19, pyEfis #118, makerplane-data #29). Two selectable RMI needles, each a
+**bearing-TO**, degrees **magnetic**, so they register on the magnetic compass
+rose (`HEAD`). All eight keys are `float`, `deg`, range `0.0–359.9` except the
+two selectors.
+
+| Key | Meaning | Writer / derivation |
+|---|---|---|
+| `GPSBRGT` | GPS bearing to active waypoint, **true** | `bearing` compute fn — great-circle initial bearing from `LAT`/`LONG` to `WPLAT`/`WPLON` |
+| `GPSBRG` | GPS bearing to waypoint, **magnetic** | `wrap360(GPSBRGT + MAGVAR)`, mirroring the established `TRACK → TRACKM` idiom |
+| `VOR1BRG` / `VOR2BRG` | VOR bearing to station, magnetic | X-Plane `nav#_bearing_deg_mag` (sim bench). On-aircraft CAN-FiX radial (canid 1228/1232) is bearing-FROM, so **radial + 180** via a `wrap360` — documented follow-on, not yet wired |
+| `BRG1SRC` / `BRG2SRC` | Per-pointer source selector `0=VOR1, 1=VOR2, 2=GPS` | Pilot-set; `tol` 2000 ms; defaults pointer 1 = GPS (2), pointer 2 = VOR1 (0) |
+| `BRG1` / `BRG2` | Bearing the HSI needle reads (selected source, magnetic) | A `select` per pointer routing `{VOR1BRG, VOR2BRG, GPSBRG}` per `BRGnSRC` — **exactly one writer each**, one-key-one-writer preserved (NAVSRC/COURSE precedent) |
+
+**Frozen decisions:** (a) every bearing is magnetic and bearing-TO; GPS is made
+magnetic via `MAGVAR` exactly as ground track is, so all three sources are
+consistent on the rose. (b) Each pointer is independently pilot-selectable
+across all three sources; `BRGn` is written only by its `select` (no source
+plugin writes it directly). (c) Quality/annunciation: the display hides a needle
+on heading-invalid (HSI-ANN-001) or on the pointer's own fail/old/bad quality
+(HSI-FAIL-001). (d) Experimental/certified: these needles are **advisory** — VOR
+bearing originates in the tuned nav radio; GPS bearing is open-stack
+great-circle to the active waypoint, not an IFR navigation source (§9 item 4).
+
 ## 10. Open problems & risk register
 
 | Item | Risk | Mitigation / note |
