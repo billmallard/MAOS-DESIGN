@@ -6,7 +6,7 @@
 
 ## Safety Notice
 
-Experimental Amateur-Built category. Everything here is **advisory / supplemental** and is not a certified navigation, attitude, or traffic system. Where a certified function is required (IFR navigation, ADS-B Out position source, Mode S transponder), it is provided by **certified COTS equipment**; the open-source stack displays and augments — it does not replace. No claim of airworthiness, certification, or compliance.
+Experimental Amateur-Built category. Nothing here is certified, and no claim of airworthiness, certification, or compliance is made. The open-source stack implements its functions — navigation included — in full, to the applicable performance standards (DO-229 lateral behaviour for the navigator, see §9.1); where a builder's installation needs a function to originate in certified equipment (IFR navigation under AIM 1-1-17, ADS-B Out position source, Mode S transponder), certified COTS equipment such as the GNX-375 plugs into the same bus as a selectable source. What an installation may claim is decided at installation, by the builder, against the rules that apply to that aircraft; it is not a limit the software imposes on itself. (Revised 2026-09-08 — Bill: the earlier "advisory / supplemental" framing was too restrictive; see `makerplane/CAPABILITIES.md`, CAP-211/212/213 note.)
 
 ---
 
@@ -35,7 +35,7 @@ The stack is **source-pluggable around a single normalized data bus**. `fix-gate
 - **Redundancy & selection are first-class.** Attitude can come from Stratux *and* OnSpeed; position from Stratux GPS *and* the GNX. The gateway is where sources are selected/fused — design for it. **The same selection axis admits a *simulated* source** (X-Plane in place of real sensors), which is the basis of the hardware-in-the-loop capability (§8).
 - **The bus is great for scalars, weak for dynamic lists.** Traffic targets and route legs are variable-length; their FIX representation is an explicit open interface decision (see §9, §10).
 - **The key DB is the single normalized model of aircraft state.** Beyond the display, that one model is what the maintenance port reads, the recorder logs, and the ground link uploads (§7).
-- **Experimental display, certified nav.** pyEfis owns presentation + experimental cues (SVS, AOA, OnSpeed tones); certified nav/position/transponder stays in the GNX. The boundary is deliberate.
+- **Every navigation function has an open-stack implementation and, where one exists, a certified alternative on the same bus.** pyEfis owns presentation and the pilot-facing cues (SVS, AOA, OnSpeed tones); fix-gateway owns the navigation engine (`flightplan` plugin: leg guidance, sequencing, Direct-To, DO-229 CDI scaling through the approach phase) and the source selection that lets a certified navigator (the GNX-375, as an `EXT*` source under `GPSSRC`) stand in for it. Which source an installation *relies on* for a given operation is the builder's call at installation, not a boundary drawn in the software.
 
 ## 3. Component inventory
 
@@ -65,7 +65,7 @@ Where each primary datum comes from in the current stack:
 | **Magnetic heading — `HEAD`** | — | ✗ **gap** (magnetometer project) |
 | ADS-B traffic — `TFC*` | Stratux | ✓ at HW; decode + FIX model + render TODO |
 | Weather (FIS-B) | Stratux | ✓ at HW; decode + render TODO |
-| Nav — `COURSE` `CDI` `GSI`, approaches | GNX-375 (certified) | Wired NMEA ✓; GPSS/Connext in progress |
+| Nav — `COURSE` `CDI` `GSI`, flight plan, approaches | fix-gateway `flightplan` engine (internal, lateral to DO-229 incl. LNAV approach scaling; pyEfis #181) **and** GNX-375 (certified, `EXT*`), selected by `GPSSRC` | Engine specified 2026-09-07/08, not built; GNX wired NMEA ✓; GPSS/Connext in progress |
 | Engine — EMS keys | CAN-FIX sensors | ✓ (pyEfis EMS screens) |
 | Baro setting, dimmer, units | pyEfis control head | ✓ |
 | *(any of the above, SIM)* | X-Plane via `xplane` plugin | HIL — source-selected (§8) |
@@ -94,8 +94,9 @@ Sequencing favors completing primary sensing before situational-awareness featur
 - **Radio:** finish MGL V16 control head in the pyEfis Radio screen (freq/active-standby/volume).
 - **Transponder:** the GNX-375 *is* the Mode S / ADS-B-Out transponder — add a control-head path (squawk / IDENT / mode) over its serial/control interface. New hardware not required.
 
-**Phase 4 — Certified GPS-navigator integration ("the official navigator problem")**
-- Treat the **GNX-375 as the authoritative IFR nav/position source**; pyEfis is the display + experimental layer. Do **not** build a DIY IFR navigator (legality + RNAV/approach engine scope).
+**Phase 4 — Navigator: the internal engine and the certified external source**
+- Build the **internal navigator** in fix-gateway (`flightplan` plugin, epic pyEfis #181): route entry and storage, leg guidance, fly-by sequencing, Direct-To, the full DO-229 lateral CDI behaviour (en-route, terminal, LNAV approach ramp, no automatic sequencing past the MAP, pilot-activated missed approach) and an integrity gate on what the position source reports. Vertical approach guidance (LNAV+V, L/VNAV, LPV) waits on a FAS data block and a Beta-3 sensor — a hardware gap, not a policy one.
+- Integrate the **GNX-375 as an external navigator source** (`EXTCRS`/`EXTCDI`/`EXTTF`), interchangeable with the internal engine through `GPSSRC`, so the two can be compared on the bench and the builder can select either in the aircraft. Which one an installation relies on for IFR is the builder's question at installation (AIM 1-1-17, AC 90-105A), recorded in `makerplane/CAPABILITIES.md`; the software does not pre-decide it. (Revised 2026-09-08; the earlier "do not build a DIY IFR navigator" line is withdrawn.)
 - Complete the GNX bridge: wired **NMEA "Aviation Output"** (position/track/GS/CDI/course) ✓; **ARINC-429 GPSS** for autopilot steering; **Connext/Bluetooth** for attitude/traffic *if* it can be unblocked (currently heartbeat-only — see §10). Mitigation if Connext stays closed: attitude from Stratux/OnSpeed, traffic from Stratux.
 
 **Phase 5 — Vehicle systems integration** *(as those subsystems mature)*
@@ -184,7 +185,7 @@ Because every source normalizes into the FIX key DB, the gateway can **source-se
 1. **FIX key contract** for new data: `AOA`/`%lift`, `HEAD` (true vs magnetic + magvar handling), traffic, route — define units, sign conventions, rates, timeout semantics, quality flags.
 2. **Dynamic-list representation over FIX** (traffic targets, route legs): indexed key blocks vs. side channel vs. structured value. The single most important open interface item (pyEfis #52).
 3. **Source-selection / fusion** for redundant inputs (two AHRS, two position sources): priority, blending, and degraded-mode behavior, owned by the gateway. **This selection axis explicitly includes real-vs-simulated (HIL, §8)** — selection, annunciation, and interlock are one mechanism.
-4. **Experimental/certified boundary:** which functions must originate in certified equipment (IFR nav, ADS-B Out, transponder) vs. may be advisory/open-source.
+4. **Certified-source selection:** every navigation function is implemented in the open stack; where a certified COTS source exists for the same function (the GNX-375 for IFR nav position and guidance, ADS-B Out, Mode S), it joins the bus as a selectable source with one writer per key. The software does not restrict which source an installation relies on — that is the builder's decision at installation against the rules for that aircraft (`makerplane/CAPABILITIES.md`, CAP-211/212/213 note; ruling 2026-09-08).
 5. **Connectivity boundary:** what the ground link / maintenance port may read vs. write, and the authentication/interlock model for all write paths (§7).
 
 ### 9.1 Ratified keys
@@ -215,9 +216,9 @@ consistent on the rose. (b) Each pointer is independently pilot-selectable
 across all three sources; `BRGn` is written only by its `select` (no source
 plugin writes it directly). (c) Quality/annunciation: the display hides a needle
 on heading-invalid (HSI-ANN-001) or on the pointer's own fail/old/bad quality
-(HSI-FAIL-001). (d) Experimental/certified: these needles are **advisory** — VOR
-bearing originates in the tuned nav radio; GPS bearing is open-stack
-great-circle to the active waypoint, not an IFR navigation source (§9 item 4).
+(HSI-FAIL-001). (d) Sources: VOR bearing originates in the tuned nav radio;
+GPS bearing is the open stack's great-circle to the active waypoint — the
+flight-plan engine's TO waypoint once pyEfis #181 lands (§9 item 4).
 
 ## 10. Open problems & risk register
 
@@ -226,7 +227,7 @@ great-circle to the active waypoint, not an IFR navigation source (§9 item 4).
 | Magnetometer calibration | Heading error from hard/soft-iron + installation | Compass-swing cal; tilt-comp using existing AHRS; site away from ferrous/current |
 | GNX Connext (BT) | Encrypted/handshake-gated; currently heartbeat-only over RFCOMM ch5 | Don't depend on it: attitude ← Stratux/OnSpeed, traffic ← Stratux; revisit only if handshake is found |
 | Dynamic lists over FIX | Bus is scalar-oriented | Resolve #52 before traffic/route implementation |
-| IFR legality | DIY navigator can't be legal-IFR | GNX is the certified source; open stack stays advisory |
+| IFR reliance | What an installation may rely on for IFR (AIM 1-1-17, AC 90-105A) is decided per aircraft at installation, not by the software | Build the navigator to the full DO-229 lateral behaviour (pyEfis #181) so the engineering evidence exists; keep the GNX-375 on the bus as a selectable certified source; record the claim question in `makerplane/CAPABILITIES.md` (ruling 2026-09-08) |
 | Chart / nav-data currency | FAA 56-day cycle | makerplane-data signed packs + on-device updater |
 | pyAvMap Qt mismatch | PyQt5 vs pyEfis PyQt6 | Port engine into the PyQt6 `map` instrument (#50), don't run standalone |
 | Connectivity attack surface | Internet/shore link exposes flight systems | Outbound-only, signed + verified ground-only OTA, auth-gated writes, no listening service (AVI-CON-2/3/4) |
