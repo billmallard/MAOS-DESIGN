@@ -220,6 +220,28 @@ on heading-invalid (HSI-ANN-001) or on the pointer's own fail/old/bad quality
 GPS bearing is the open stack's great-circle to the active waypoint — the
 flight-plan engine's TO waypoint once pyEfis #181 lands (§9 item 4).
 
+**Lateral guidance validity (CDI)** — ratified 2026-10-30 (Bill; BACKLOG G10
+half (b), fix-gateway #20). Today the course-deviation needle is hidden only on
+its own data quality (`old`/`bad`/`fail`), so a localizer that is tuned but not
+received draws a **centred** needle: on-course guidance from no signal. The
+glideslope already has the fix (`NAV#GSV` → `GSV`); these keys give the lateral
+needle the same shape. All are `float`, range `0.0–1.0`, `1` = valid.
+
+| Key | Meaning | Writer / derivation |
+|---|---|---|
+| `NAV1CDIV` / `NAV2CDIV` | Nav radio's lateral signal received and displayable | From `NAV#DH` (X-Plane `nav#_display_horizontal` on the sim bench), the same input `NAV#GSV` already uses. On-aircraft nav-radio flag source is a documented follow-on, not yet wired |
+| `GPSCDIV` | GPS lateral guidance valid | **Only from a real validity signal**, named in the PR (for example the flight-plan engine's own integrity / active-leg state). No invented dataref; if no honest source exists, the GPS leg is not gated and the PR says so |
+| `CDIV` | Selected-source lateral guidance valid — what the HSI reads | A `select` over `NAVSRC` (`0=NAV1, 1=NAV2, 2=GPS`) — **exactly one writer**, the `GSV` / `COURSE` precedent |
+
+**Frozen decisions:** (a) validity is its own key, not a quality flag on `CDI`:
+quality flags describe the data path, validity describes whether the radio is
+receiving guidance, and the two fail independently. (b) `CDIV` is written only
+by its `select`; no source plugin writes it directly. (c) Display: the HSI hides
+or flags the course needle at `CDIV = 0`. An **absent** `CDIV` leaves the needle
+on its own quality, exactly as an absent `GSV` does, so a device on an older
+fix-gateway is unchanged. (d) Additive only: the existing `GSV`, `TOFROM` and
+`COURSE` selects and every shipped key keep their meaning.
+
 ## 10. Open problems & risk register
 
 | Item | Risk | Mitigation / note |
