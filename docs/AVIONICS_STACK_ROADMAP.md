@@ -242,6 +242,25 @@ on its own quality, exactly as an absent `GSV` does, so a device on an older
 fix-gateway is unchanged. (d) Additive only: the existing `GSV`, `TOFROM` and
 `COURSE` selects and every shipped key keep their meaning.
 
+**Raw magnetometer vector** — ratified 2026-10-31 (Bill; BACKLOG P8, fix-gateway
+#85, card on AER-4338). The field a DroneCAN magnetometer reports, written as
+received. This is the first step on the last primary-sensor gap (heading from a
+magnetometer rather than GPS track). All three keys are `float`, `gauss`, range
+`-10.0` to `10.0`, `tol` 2000.
+
+| Key | Meaning | Writer / derivation |
+|---|---|---|
+| `MAGX` / `MAGY` / `MAGZ` | Raw field on the sensor's X / Y / Z axis, in the frame the sensor reports (DroneCAN `MagneticFieldStrength2`: body frame) | `dronecan` plugin mapfile, `magnetic_field_ga[0..2]` — **exactly one writer each** |
+
+**Frozen decisions:** (a) Raw and uncalibrated, in wire units. Hard- and
+soft-iron calibration and mount alignment live only in the compute stage, so the
+bridge stays a pure translator. (b) `HEAD` is derived from these by a compute
+stage, tilt-compensated with `PITCH`/`ROLL`, which also owns `MAGW`. No source
+plugin writes `HEAD` from them. (c) CAN-FIX has no raw-vector parameter
+(`canfix.json` carries Heading 389 only), so there is no CAN-FIX name to match;
+the `MAG` prefix follows `MAGVAR` and `MAGW`. A second magnetometer source joins
+through a `select`, never as a second writer.
+
 ## 10. Open problems & risk register
 
 | Item | Risk | Mitigation / note |
