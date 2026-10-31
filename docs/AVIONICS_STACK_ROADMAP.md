@@ -182,6 +182,35 @@ Because every source normalizes into the FIX key DB, the gateway can **source-se
 
 ## 9. Key interface decisions (freeze before deep implementation)
 
+**Governing rule: displays read engine state; they never reconstruct it.**
+Ruled by Bill on 2026-10-31 (G49, AER-4323). When a display needs a fact that an
+engine already computes, that engine publishes it as a FIX key with exactly one
+writer, and the display reads the key. The engine may be the flight-plan engine,
+a gateway compute stage, or a source plugin. The display does not re-derive the
+fact from other keys.
+
+- **Why.** A reconstruction is a second implementation of the engine's logic,
+  in a different repo, and it drifts. It is also usually wrong at exactly the
+  edges the engine handles. G49's first version inferred "suspended at the
+  missed-approach point" from `SUSP`, the active fix and position, and so
+  labelled two pilot-suspend states "Fly the missed" when RESUME would only have
+  un-suspended.
+- **What stays in the display:** presentation, meaning layout, colour, wording,
+  and which widget shows what. Anything that answers "what state is the aircraft
+  or the navigator in?" is a key.
+- **When the key is absent** (an older gateway), the display falls back to its
+  behaviour from before the key existed, as with `CDIV` and `GSV` in §9.1. It
+  never falls back to a reconstruction.
+- **When no engine computes the fact yet**, add it to the engine or compute stage
+  that owns the data, in fix-gateway, first. A display-side calculation is
+  acceptable only as a stopgap Bill approves explicitly, with its known wrong
+  cases listed and a BACKLOG item to move it.
+- **Precedents:**
+  - `CDIV` (2026-10-30): the course needle drew centred with no signal, because
+    no validity key existed.
+  - The G49 "suspended at the MAP" key (2026-10-31): Bill approved the glass and
+    rejected the inference.
+
 1. **FIX key contract** for new data: `AOA`/`%lift`, `HEAD` (true vs magnetic + magvar handling), traffic, route — define units, sign conventions, rates, timeout semantics, quality flags.
 2. **Dynamic-list representation over FIX** (traffic targets, route legs): indexed key blocks vs. side channel vs. structured value. The single most important open interface item (pyEfis #52).
 3. **Source-selection / fusion** for redundant inputs (two AHRS, two position sources): priority, blending, and degraded-mode behavior, owned by the gateway. **This selection axis explicitly includes real-vs-simulated (HIL, §8)** — selection, annunciation, and interlock are one mechanism.
