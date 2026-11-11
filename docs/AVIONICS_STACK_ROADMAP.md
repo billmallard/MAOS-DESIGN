@@ -290,6 +290,29 @@ plugin writes `HEAD` from them. (c) CAN-FIX has no raw-vector parameter
 the `MAG` prefix follows `MAGVAR` and `MAGW`. A second magnetometer source joins
 through a `select`, never as a second writer.
 
+**Fuel Quantity tank numbering (CAN-FIX)** -- ratified 2026-11-09 (Bill; FUEL1
+brief decision D5, makerplane-data#176; BACKLOG FUEL1b, canfix-spec #7). **No
+FIX key is minted**: `FUELQn` already expands to any `n`. This block records how
+a CAN fuel node reaches `FUELQn` past four tanks. Upstream names the "Aux Tank"
+index on 550-553 but gives no rule for it.
+
+| Tank `n` (1-based) | CAN-FIX identifier | Index | FIX key |
+|---|---|---|---|
+| 1-4 | 550-553 | 0 | `FUELQ1`-`FUELQ4` |
+| 5-8 | 550-553 | 1 | `FUELQ5`-`FUELQ8` |
+| `n` | `550 + ((n-1) mod 4)` | `floor((n-1)/4)` | `FUELQn` |
+
+**Frozen decisions:** (a) No new parameter id: the encoding uses the existing
+index, and tanks 1-4 are unchanged, so every deployed node and map row keeps its
+meaning. (b) The index byte runs 0-255, so the rule reaches 1024 tanks. The
+configurator's ceiling of 8 is a product choice, not this limit. (c) One node
+per identifier: tanks that share an identifier (1 and 5) are sent by the same
+node, by the spec's existing rule against two nodes sending one identifier. (d)
+It is a fork definition (ORG-011), recorded in canfix-spec's Parameters chapter
+under "Divergence from upstream". (e) Rejected alternative: fix-gateway-only
+keys for tanks 5 and up. They would leave a tank that a CAN fuel node cannot
+report. fix-gateway's map rows are FUEL1i.
+
 ## 10. Open problems & risk register
 
 | Item | Risk | Mitigation / note |
