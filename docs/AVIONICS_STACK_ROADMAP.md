@@ -313,6 +313,30 @@ under "Divergence from upstream". (e) Rejected alternative: fix-gateway-only
 keys for tanks 5 and up. They would leave a tank that a CAN fuel node cannot
 report. fix-gateway's map rows are FUEL1i.
 
+**Commanded turn direction (`FPLTURN`)** -- ratified 2026-11-14 (Bill; minted
+2026-11-13 under the §9 governing rule by AVIONICS as the fix-gateway engine
+owner, AER-4541, QA1 F3; fix-gateway #171). On the KSSF RNAV 28 missed approach the CA climb is followed
+by DF GANLE, coded RIGHT, about 125 deg left of the climb-out. The engine
+steered straight to GANLE, so a coupled autopilot turned left, the short way,
+and nothing on the glass said RIGHT TURN. The engine now flies a coded DF turn
+as a turn circle, then the line from its tangent point, and publishes the turn
+it is flying.
+
+| Key | Meaning | Writer / derivation |
+|---|---|---|
+| `FPLTURN` | `str`, `"L"` / `"R"` / `""`: commanded turn direction on the active leg. `"L"`/`"R"` while the engine flies the coded turn that opens a DF (`LEGPHASE_DF_TURN`), `""` otherwise and during failed guidance | fix-gateway flight-plan engine -- **exactly one writer** |
+
+**Frozen decisions:** (a) The coded direction stays in the route slot as
+`FPLfTURN`; no new slot key. On a DF it is optional: `""` (or CIFP's `E`) means
+the short way, unlike arcs, holds and PI, where a blank is `BADTURN`. (b) The
+display annunciates `FPLTURN` and never derives it from `FPLfTURN` and the
+track. (c) An **absent** `FPLTURN` (an older gateway) shows no annunciation,
+which is the behaviour from before the key. (d) Scope is the DF turn; the engine
+may later set it for hold and PI turns. How the annunciation looks is Bill's
+(PA9, AER-1608). The guidance rule itself is row "DF with a coded turn
+direction" in `makerplane/briefs/flight_plan_plan.md` section 3.3.1
+(maos-workspace).
+
 ## 10. Open problems & risk register
 
 | Item | Risk | Mitigation / note |
