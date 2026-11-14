@@ -313,9 +313,9 @@ under "Divergence from upstream". (e) Rejected alternative: fix-gateway-only
 keys for tanks 5 and up. They would leave a tank that a CAN fuel node cannot
 report. fix-gateway's map rows are FUEL1i.
 
-**Commanded turn direction (`FPLTURN`)** -- minted 2026-11-13 under the §9
-governing rule (AVIONICS as the fix-gateway engine owner, AER-4541, QA1 F3;
-fix-gateway #171). On the KSSF RNAV 28 missed approach the CA climb is followed
+**Commanded turn direction (`FPLTURN`)** -- ratified 2026-11-14 (Bill; minted
+2026-11-13 under the §9 governing rule by AVIONICS as the fix-gateway engine
+owner, AER-4541, QA1 F3; fix-gateway #171). On the KSSF RNAV 28 missed approach the CA climb is followed
 by DF GANLE, coded RIGHT, about 125 deg left of the climb-out. The engine
 steered straight to GANLE, so a coupled autopilot turned left, the short way,
 and nothing on the glass said RIGHT TURN. The engine now flies a coded DF turn
