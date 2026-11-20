@@ -271,6 +271,22 @@ on its own quality, exactly as an absent `GSV` does, so a device on an older
 fix-gateway is unchanged. (d) Additive only: the existing `GSV`, `TOFROM` and
 `COURSE` selects and every shipped key keep their meaning.
 
+**Crew alerting (CAS)**: ratified 2026-11-20 (Bill; promotion packet AER-6048,
+BACKLOG CAS2, fix-gateway PR #214). The gateway owns the alert list and displays only
+draw it (`makerplane/briefs/crew_alerting.md` 5.3, 5.4).
+
+| Key | Meaning | Writer |
+|---|---|---|
+| `CASMSG1`..`CASMSG12` | Slot n of the sorted list, `LEVEL\|ACK\|ID\|TEXT\|DETAIL` (3 warning, 2 caution, 1 advisory), `""` unused | `cas` plugin only |
+| `CASCNT` | Active messages, including any past slot 12 | `cas` plugin only |
+| `CASTOP` | Highest unacknowledged level, 0-3 | `cas` plugin only |
+| `CASSEQ` | Bumped on every list change, written after the slots | `cas` plugin only |
+| `CASACK` | The `CASSEQ` a display shows; acknowledges everything first published up to it | Displays (several writers, a pilot setting) |
+| `CASACKBTN` | Panel button; a rising edge acknowledges the current `CASSEQ` | `rpi_button` |
+| `NAVFAIL` | Selected-source lateral guidance lost: `CDI` old/bad/fail, `CDIV < 0.5`, or `COURSE` bad/fail | `cas` plugin only |
+
+**Frozen decisions:** (a) All `cas` keys have tol 3000 and are rewritten every second, so loss of the plugin reads as old (`CAS FAIL`), never as a quiet list. (b) `CASSEQ` starts above any `CASSEQ` or `CASACK` on the bus, a `CASACK` above `CASSEQ` is ignored, and `CASACKBTN` is debounced (C3). (c) Text never holds `;` or `|`; an entry that does is refused at load. (d) `NAVFAIL` is the HSI's NAV flag rule, so the HSI and CAS read one rule; an absent or old `NAVFAIL` leaves the HSI on its own logic, as with `CDIV` and `GSV`. The `NAV FAIL` alert additionally requires that the selected source had valid guidance earlier in the run (C5). (e) Additive only: no existing key changes meaning.
+
 **Raw magnetometer vector** — ratified 2026-10-31 (Bill; BACKLOG P8, fix-gateway
 #85, card on AER-4338). The field a DroneCAN magnetometer reports, written as
 received. This is the first step on the last primary-sensor gap (heading from a
