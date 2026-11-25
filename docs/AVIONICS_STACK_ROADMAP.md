@@ -353,6 +353,22 @@ may later set it for hold and PI turns. How the annunciation looks is Bill's
 direction" in `makerplane/briefs/flight_plan_plan.md` section 3.3.1
 (maos-workspace).
 
+**GPS horizontal accuracy (`GPS_ACCURACY_HORIZ`)** -- meaning ratified
+2026-11-25 (Bill; card `8360436f` on AER-6461; SRC4, AER-6455; fix-gateway
+#246, merge `bfb7e0a`). The receiver's **95 % horizontal position accuracy**,
+in feet: AC 20-138D's HFOM (appendix 4, A4-9), the EPU that GDL-90's NACp is
+graded on. **Not a protection level.** Integrity is HPL against the alert limit
+(AC 20-138D appendix 1), and no key carries HPL. Writers today: `gpsd` (`epx`,
+a longitude error of unstated certainty), `mavlink` (`h_acc`, statistic
+unstated), and `demo` (a constant 30 ft). Each declares its statistic in
+`writers.yaml`. Consumers: the flight plan engine's `FPLINTEG` gate, which
+compares it against the HAL as a stand-in for HPL, and gdl90_out's NACp.
+
+**Frozen decisions:** (a) The key is the 95 % horizontal accuracy (HFOM), in
+feet. (b) It is not a protection level. Not decided here: whether to add an HPL key for the engine's integrity gate,
+and how the gpsd and mavlink writers come to report a 95 % figure. The key's
+type, range and timeout stay in `database/ahrs.yaml`, unchanged by this block.
+
 ## 10. Open problems & risk register
 
 | Item | Risk | Mitigation / note |
