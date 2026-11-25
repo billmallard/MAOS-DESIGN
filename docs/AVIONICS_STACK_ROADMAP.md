@@ -365,9 +365,10 @@ unstated), and `demo` (a constant 30 ft). Each declares its statistic in
 compares it against the HAL as a stand-in for HPL, and gdl90_out's NACp.
 
 **Frozen decisions:** (a) The key is the 95 % horizontal accuracy (HFOM), in
-feet. (b) It is not a protection level. Not decided here: whether to add an HPL key for the engine's integrity gate,
-and how the gpsd and mavlink writers come to report a 95 % figure. The key's
-type, range and timeout stay in `database/ahrs.yaml`, unchanged by this block.
+feet. (b) It is not a protection level. Not decided here: whether to add an
+HPL key for the engine's integrity gate, and how the gpsd and mavlink writers
+come to report a 95 % figure. The key's type, range and timeout stay in
+`database/ahrs.yaml`, unchanged by this block.
 
 ## 10. Open problems & risk register
 
