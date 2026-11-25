@@ -329,6 +329,35 @@ under "Divergence from upstream". (e) Rejected alternative: fix-gateway-only
 keys for tanks 5 and up. They would leave a tank that a CAN fuel node cannot
 report. fix-gateway's map rows are FUEL1i.
 
+**Flight plan command channel (`FPLCMD`)** -- writers ratified 2026-11-25
+(Bill; card `bc9865d2` on AER-6518; FPA6, fix-gateway #250). **No FIX key is
+minted**: `FPLCMD` and `FPLCMDACK` are FP1's (`doc/flightplan_keys.md`, "Command
+channel", fix-gateway). This block records that `FPLCMD` has more than one
+writer. FPA6's writer scan found two in pyEfis `dev`: the flight plan editor's
+`FixBridge.command` and the HSI's `_send_fpl_command`, which sends `OBS`
+from the CRS knob.
+
+| Key | Meaning | Writer / derivation |
+|---|---|---|
+| `FPLCMD` | `str`, `"<seq> VERB [arg]"`: one command to the flight plan engine (FP1 Appendix C) | pyEfis flight plan editor and HSI -- **two writers, arbitrated by `seq`** |
+| `FPLCMDACK` | `int`, `seq` on success, `-seq` on rejection | fix-gateway flight-plan engine -- **exactly one writer** |
+
+**Frozen decisions:** (a) `FPLCMD` is a command channel, not a value, so the
+one-writer rule does not apply to it. Each write is an event, and no source
+needs selecting, so a `select` cannot apply. (b) Every writer takes its `seq`
+from the bus: one past the highest seq in the last `FPLCMD` or `FPLCMDACK`. That
+makes `seq` strictly increasing across all writers, not only within one
+editor session, and each writer matches its ack by `seq`. The HSI keeps its own
+copy of the rule, because pyEfis core may not import the flight-plan package
+(rule R1). pyEfis `tests/instruments/hsi/test_hsi_gps_obs.py` holds the two
+copies together. (c) The grant covers these two writers only. A third writer
+needs its own ruling, and fix-gateway's
+`tests/arch/key_writers_baseline.yaml` fails if one appears without it. Not
+decided here: FP1's text still names only the editor as the writer, and
+`doc/flightplan_keys.md`'s "one key, one writer, with a single documented
+exception" now has a second exception. Bringing that text into line is
+fix-gateway's.
+
 **Commanded turn direction (`FPLTURN`)** -- ratified 2026-11-14 (Bill; minted
 2026-11-13 under the §9 governing rule by AVIONICS as the fix-gateway engine
 owner, AER-4541, QA1 F3; fix-gateway #171). On the KSSF RNAV 28 missed approach the CA climb is followed
