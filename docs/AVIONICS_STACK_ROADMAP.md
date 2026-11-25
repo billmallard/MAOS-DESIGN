@@ -345,18 +345,21 @@ from the CRS knob.
 **Frozen decisions:** (a) `FPLCMD` is a command channel, not a value, so the
 one-writer rule does not apply to it. Each write is an event, and no source
 needs selecting, so a `select` cannot apply. (b) Every writer takes its `seq`
-from the bus: one past the highest seq in the last `FPLCMD` or `FPLCMDACK`. That
-makes `seq` strictly increasing across all writers, not only within one
-editor session, and each writer matches its ack by `seq`. The HSI keeps its own
-copy of the rule, because pyEfis core may not import the flight-plan package
-(rule R1). pyEfis `tests/instruments/hsi/test_hsi_gps_obs.py` holds the two
-copies together. (c) The grant covers these two writers only. A third writer
-needs its own ruling, and fix-gateway's
-`tests/arch/key_writers_baseline.yaml` fails if one appears without it. Not
-decided here: FP1's text still names only the editor as the writer, and
-`doc/flightplan_keys.md`'s "one key, one writer, with a single documented
-exception" now has a second exception. Bringing that text into line is
-fix-gateway's.
+from the bus: one past the highest seq in the last `FPLCMD` or `FPLCMDACK`.
+Each writer matches its ack by `seq`. Within one pyEfis process, where reads
+and writes are serialised, that makes `seq` strictly increasing across both
+writers. Two displays on one gateway are not covered: each reads and then
+writes, so both can send the same seq. The HSI keeps its own copy of the rule,
+because pyEfis core may not import the flight-plan package (rule R1). pyEfis
+`tests/instruments/hsi/test_hsi_gps_obs.py` holds the two copies together.
+(c) The grant covers these two writers on one display. A third writer needs its
+own ruling, and so does a second display sending commands to the same gateway.
+fix-gateway's `tests/arch/key_writers_baseline.yaml` fails when a new module
+writes `FPLCMD`. It cannot see a second display, because that display runs the
+same modules. Not decided here: FP1's text (`doc/flightplan_keys.md`) still
+names the editor as the only writer, and its "one key, one writer, with a
+single documented exception" now has a second exception. BACKLOG `FPA7`
+(maos-workspace, Owner AVIONICS) brings that text into line.
 
 **Commanded turn direction (`FPLTURN`)** -- ratified 2026-11-14 (Bill; minted
 2026-11-13 under the §9 governing rule by AVIONICS as the fix-gateway engine
