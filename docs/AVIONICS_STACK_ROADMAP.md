@@ -225,6 +225,24 @@ key's exact values (type, min/max, initial, timeout). This subsection is the
 experimental/certified rationale behind each ratified block — the "why" §9
 freezes, not a mirror of the DB. Add a block here when new keys are minted.
 
+**Writers by class** — ruled 2026-11-26 (Bill; card 08ec3c22 on AER-6623,
+BACKLOG ARCHG3a). The one-key-one-writer rule of §9 items 3-4 applies by class
+of key. (a) A sensed or derived value has exactly one live writer. Rival sources
+for it reach it only through a `select`, as `BRGn`, `CDIV` and `COURSE` do
+below. (b) Seven pilot-setting keys, `ALTSEL`, `VSSEL`, `IASSEL`, `HEADBUG`,
+`NAV1CRS`, `NAV2CRS` and `BARO`, may be written by the panel and by external
+devices. Each external writer follows the echo rule: it writes a key only when
+its own device's value has moved past its eps from the last value it agreed
+with the bus, and it holds a value it was sent until its device shows it or a
+settle time passes. The reference implementation is fix-gateway's X-Plane
+autopilot plugin, `_sync_from_sim` and `_sync_to_sim`
+(`src/fixgw/plugins/xplane/autopilot.py:460-499` at `6f9cfda`, settle time
+`TARGET_SETTLE_S`). The list is closed: adding a key to it is Bill's ruling.
+(c) A command channel is arbitrated by `seq` rather than held to one writer
+(the `FPLCMD` note, MAOS-DESIGN#21). In every class the panel, meaning all
+pyEfis modules together, counts as one writer. This paragraph mints and
+changes no key.
+
 **Bearing pointers (HSI RMI)** — ratified 2026-08-04 (P5b.1/.2; fix-gateway
 PR #19, pyEfis #118, makerplane-data #29). Two selectable RMI needles, each a
 **bearing-TO**, degrees **magnetic**, so they register on the magnetic compass
