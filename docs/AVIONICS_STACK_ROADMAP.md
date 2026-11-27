@@ -267,6 +267,34 @@ on heading-invalid (HSI-ANN-001) or on the pointer's own fail/old/bad quality
 GPS bearing is the open stack's great-circle to the active waypoint — the
 flight-plan engine's TO waypoint once pyEfis #181 lands (§9 item 4).
 
+**ADF bearing (an ADF on an HSI bearing pointer)** — ratified 2026-11-27 (Bill, in
+session: "Go with your recommendations, add CAP-216"; maos-workspace
+`makerplane/briefs/adf_spike.md`, BACKLOG ADF0-ADF2, CAP-216). Extends the bearing
+pointer block above: an ADF is one more input to the existing `BRGn` `select`. The
+receiver's native output is a **relative** bearing (FAA-H-8083-15B ch. 9: "MH + RB =
+MB to the station"), so the magnetic bearing is computed from `HEAD`.
+
+| Key | Meaning | Writer / derivation |
+|---|---|---|
+| `ADF1FREQ` | Tuned frequency, `float`, **kHz**, `190.0–1799.5`, step 0.5 | Pilot (pyEfis) or the receiver; the receiver echoes it as the active frequency |
+| `ADF1RB` | Relative bearing to the station, `float`, deg clockwise from the nose, `0.0–359.9` | The receiver plugin, **one writer**. `bad` while the receiver flags the signal invalid; `fail` in ANT and OFF |
+| `ADF1MODE` | `int`, `0` OFF, `1` ANT, `2` ADF, `3` BFO | The receiver (a pilot request goes via the receiver) |
+| `ADF1BRG` | ADF bearing to station, **magnetic**, `float`, `0.0–359.9` | Compute `wrap360(HEAD + ADF1RB)`; inherits `old`, `bad` and `fail` from both inputs |
+| `BRG1SRC` / `BRG2SRC` | Adds **`4` = ADF1** (`3` stays reserved for GPS2); `max` rises to 4 | Existing. `ADF1BRG` is added as a `select` input, so `BRGn` keeps exactly one writer |
+
+**Frozen decisions:** (a) units are kHz, not Hz: what the pilot reads, what NASR
+carries, what the FAA texts use. The range covers ICAO Annex 10's 190–1750 kHz (AIM
+1-1-2.a), not only the US band. (b) `ADF1BRG` is magnetic and bearing-TO, consistent
+with every other bearing on the rose (decision (a) of the block above). (c) There is no
+`ADF1IDENT` key: a receiver does not decode the Morse ident, and a decoded ident on the
+glass would imply a check that never happened. The display may show an ident looked
+up from the tuned frequency, marked as a lookup. (d) Which pointer an ADF drives is an
+installation option (`bearing1_source`, `bearing2_source`), keeping each pointer's
+fixed source (HSIBRG4); there is no third pointer. (e) A second receiver, if ever
+needed, follows the same pattern as `ADF2*`, with `5` = ADF2. (f) ADF receivers carry
+no flag for an erroneous bearing (AIM 1-1-2.d); `bad` covers loss of signal only, and
+the pilot's aural identification stays the integrity check (pyEfis FHA NAV-6).
+
 **Lateral guidance validity (CDI)** — ratified 2026-10-30 (Bill; BACKLOG G10
 half (b), fix-gateway #20). Today the course-deviation needle is hidden only on
 its own data quality (`old`/`bad`/`fail`), so a localizer that is tuned but not
